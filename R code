@@ -1,0 +1,129 @@
+#Classification of EPIC-XS colon cancer samples into CMS groups
+setwd("C:/Users/BMM-3/Documents/R scripts/CMS colon")
+library(dplyr)
+
+#calculate centroids for each cms in TCGA colon cancer data
+TCGA_colon <-read.csv("datos TCGA colon.csv")
+genes <- labels (TCGA_colon[,3:451])
+
+
+
+table (TCGA_colon$cms)
+
+#centroid cms1
+
+TCGA_cms1 <- filter (TCGA_colon, cms== "CMS1")
+
+centroid_cms1 <- as.vector (NA)
+
+TCGA_cms1_dat <- TCGA_cms1[3:451]
+
+for (i in 1:ncol(TCGA_cms1_dat) ){
+  centroid_cms1[i] = mean(TCGA_cms1_dat[,i])
+  
+} 
+
+
+
+#centroid cms2
+
+
+TCGA_cms2 <- filter (TCGA_colon, cms== "CMS2")
+
+centroid_cms2 <- as.vector (NA)
+
+TCGA_cms2_dat <- TCGA_cms2[3:451]
+
+for (i in 1:ncol(TCGA_cms2_dat) ){
+  centroid_cms2[i] = mean(TCGA_cms2_dat[,i])
+}  
+
+
+
+#centroid cms3
+
+
+TCGA_cms3 <- filter (TCGA_colon, cms== "CMS3")
+
+centroid_cms3 <- as.vector (NA)
+
+TCGA_cms3_dat <- TCGA_cms3[3:451]
+
+for (i in 1:ncol(TCGA_cms3_dat) ){
+  centroid_cms3[i] = mean(TCGA_cms3_dat[,i])
+} 
+
+
+
+
+#centroid cms4
+
+
+TCGA_cms4 <- filter (TCGA_colon, cms== "CMS4")
+
+centroid_cms4 <- as.vector (NA)
+
+TCGA_cms4_dat <- TCGA_cms4[3:451]
+
+for (i in 1:ncol(TCGA_cms4_dat) ){
+  centroid_cms4[i] = mean(TCGA_cms4_dat[,i])
+} 
+
+
+
+
+
+
+TCGA_colon_t <- t(TCGA_colon)
+
+centroids <- cbind(genes[[2]], centroid_cms1, centroid_cms2, centroid_cms3, centroid_cms4 )
+
+
+
+
+#calculate pearson correlation between centroids and epic data
+
+dat <- data.matrix(read.csv("epic data.csv",head=TRUE))
+
+numdat <- dat[,2:157]
+
+#scale
+num_TCGA_colon <- TCGA_colon[3:451]
+
+mean_genes_TCGA_colon <- as.vector(NA)
+
+for (i in 1:ncol(num_TCGA_colon) ){
+  mean_genes_TCGA_colon[i] = mean(num_TCGA_colon[,i])
+} 
+
+dat <- data.matrix(read.csv("epic data.csv",head=TRUE))
+
+numdat <- dat[,2:157]
+mean_genes_dat <- as.vector(NA)
+
+for (i in 1:nrow(numdat) ){
+  mean_genes_dat[i] = mean(numdat[i,])
+} 
+
+scale_dat <- numdat+mean_genes_TCGA_colon-mean_genes_dat
+
+write.table (scale_dat,"scaledat.txt")
+
+
+
+
+pearson_cms1 <- as.vector(NA)
+pearson_cms2 <- as.vector(NA)
+pearson_cms3 <- as.vector(NA)
+pearson_cms4 <- as.vector(NA)
+
+for (i in 1:ncol(numdat) ){
+  pearson_cms1[i] = cor(scale_dat[,i],centroid_cms1,method="pearson")
+  pearson_cms2[i] = cor(scale_dat[,i],centroid_cms2,method="pearson")
+  pearson_cms3[i] = cor(scale_dat[,i],centroid_cms3,method="pearson")
+  pearson_cms4[i] = cor(scale_dat[,i],centroid_cms4,method="pearson")
+
+} 
+
+
+correlations <- cbind(colnames(numdat), pearson_cms1, pearson_cms2, pearson_cms3, pearson_cms4 )
